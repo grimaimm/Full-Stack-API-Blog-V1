@@ -12,7 +12,8 @@ import re
 def generate_access_token(user_id):
     access_token = create_access_token(
         # identity=user_id, expires_delta=timedelta(minutes=2)
-        identity=user_id, expires_delta=timedelta(days=1)
+        identity=user_id,
+        expires_delta=timedelta(days=1),
     )
     return access_token
 
@@ -42,7 +43,7 @@ def login_user():
 
     # Cek password
     if user and check_password_hash(user.password, password):
-        
+
         # Generate access token
         access_token = generate_access_token(str(user.id))
 
@@ -52,10 +53,19 @@ def login_user():
                 "status": "success",
                 "message": "Login berhasil",
                 "access_token": access_token,
-                "user_level": user.level_id
+                "user_level": user.level_id,
                 # "user": user.to_dict(include_password=False),
             }
         )
+
+        response.set_cookie(
+            "access_token",
+            access_token,
+            httponly=True,  # Mencegah akses cookie via JavaScript
+            secure=True,  # Menggunakan HTTPS (diaktifkan di produksi)
+            samesite="None",  # Membolehkan lintas situs (terutama untuk frontend terpisah)
+            max_age=timedelta(days=1),
+        )  # Token berlaku selama 1 hari
 
         return response, 200
 
