@@ -60,13 +60,15 @@ export default function LoginForm() {
 
         // Check user level and redirect
         if (result.user_level === 1 || result.user_level === 2) {
-          router.push('/dashboard/users'); // Redirect to dashboard for admin and higher level users
+          // router.push('/dashboard/users'); // Redirect to dashboard for admin and higher level users
+          window.location.href = '/dashboard/users';
         } else {
           setAlert({
             type: 'danger',
             message: 'You do not have access to the dashboard.',
           });
-          router.push('/'); // Redirect to homepage for unauthorized users
+          // router.push('/'); // Redirect to homepage for unauthorized users
+          window.location.href = '/';
         }
       } else {
         // Handle case where result.status is not 'success'
