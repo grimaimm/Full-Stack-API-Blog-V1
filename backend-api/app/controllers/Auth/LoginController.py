@@ -58,14 +58,14 @@ def login_user():
             }
         )
 
-        response.set_cookie(
-            "access_token",
-            access_token,
-            httponly=True,  # Mencegah akses cookie via JavaScript
-            secure=True,  # Menggunakan HTTPS (diaktifkan di produksi)
-            samesite="None",  # Membolehkan lintas situs (terutama untuk frontend terpisah)
-            max_age=timedelta(days=1),
-        )  # Token berlaku selama 1 hari
+        # response.set_cookie(
+        #     "access_token",
+        #     access_token,
+        #     httponly=True,  # Mencegah akses cookie via JavaScript
+        #     secure=True,  # Menggunakan HTTPS (diaktifkan di produksi)
+        #     samesite="None",  # Membolehkan lintas situs (terutama untuk frontend terpisah)
+        #     max_age=timedelta(days=1),
+        # )  # Token berlaku selama 1 hari
 
         return response, 200
 
