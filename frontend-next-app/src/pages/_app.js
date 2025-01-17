@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import '@/styles/globals.css';
 import LayoutDashboard from '@/common/components/layouts/LayoutDashboard';
 import LayoutDefault from '@/common/components/layouts/LayoutDefault';
-import {ThemeProvider as NextThemesProvider} from "next-themes";
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
 const ProgressBar = dynamic(
   () => import('@/common/components/elements/ProgressBar'),
@@ -17,22 +17,31 @@ const ProgressBar = dynamic(
 function AppLayout({ children }) {
   const { layout, setLayout, loading } = useLayout();
   const router = useRouter();
-  const { user } = useSession();
+  // const { user } = useSession();
 
+  // React.useEffect(() => {
+  //   if (user && user.level_id === 3 && router.pathname.includes('/dashboard')) {
+  //     // Jika level_id adalah 3, arahkan pengguna ke halaman lain
+  //     router.push('/');
+  //   } else {
+  //     if (router.pathname.includes('/dashboard')) {
+  //       setLayout('dashboard');
+  //       // } else if (router.pathname.includes('/auth')) {
+  //       //   setLayout('auth');
+  //     } else {
+  //       setLayout('default');
+  //     }
+  //   }
+  // }, [router.pathname, setLayout, user]);
   React.useEffect(() => {
-    if (user && user.level_id === 3 && router.pathname.includes('/dashboard')) {
-      // Jika level_id adalah 3, arahkan pengguna ke halaman lain
-      router.push('/');
+    if (router.pathname.includes('/dashboard')) {
+      setLayout('dashboard');
+    // } else if (router.pathname.includes('/auth')) {
+    //   setLayout('auth');
     } else {
-      if (router.pathname.includes('/dashboard')) {
-        setLayout('dashboard');
-        // } else if (router.pathname.includes('/auth')) {
-        //   setLayout('auth');
-      } else {
-        setLayout('default');
-      }
+      setLayout('default');
     }
-  }, [router.pathname, setLayout, user]);
+  }, [router.pathname, setLayout]);
 
   if (loading) {
     return null;
@@ -43,7 +52,9 @@ function AppLayout({ children }) {
   // }
 
   return layout === 'dashboard' ? (
-    <LayoutDashboard>{children}</LayoutDashboard>
+    <SessionProvider>
+      <LayoutDashboard>{children}</LayoutDashboard>
+    </SessionProvider>
   ) : (
     <LayoutDefault>{children}</LayoutDefault>
   );
@@ -52,18 +63,16 @@ function AppLayout({ children }) {
 export default function App({ Component, pageProps }) {
   return (
     <>
-      <SessionProvider>
-        <HeroUIProvider>
-          <NextThemesProvider attribute='class' defaultTheme='dark'>
-            <LayoutProvider>
-              <AppLayout>
-                <ProgressBar />
-                <Component {...pageProps} />
-              </AppLayout>
-            </LayoutProvider>
-          </NextThemesProvider>
-        </HeroUIProvider>
-      </SessionProvider>
+      <HeroUIProvider>
+        <NextThemesProvider attribute='class' defaultTheme='dark'>
+          <LayoutProvider>
+            <AppLayout>
+              <ProgressBar />
+              <Component {...pageProps} />
+            </AppLayout>
+          </LayoutProvider>
+        </NextThemesProvider>
+      </HeroUIProvider>
     </>
   );
 }

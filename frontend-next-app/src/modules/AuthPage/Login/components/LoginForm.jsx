@@ -47,49 +47,113 @@ export default function LoginForm() {
       }
 
       const result = await response.json();
-      // console.log(result); // Log the received data for debugging
+      console.log(result); // Log the received data for debugging
 
-      // if (result.status === 'success') {
-      //   setAlert({ type: 'success', message: result.message });
-
-      //   Cookies.set('access_token', result.access_token, {
-      //     expires: 1, // 1 day expiration
-      //     secure: true, // Pastikan menggunakan HTTPS
-      //     sameSite: 'Strict'
-      //   });
-
-      //   // Check user level
-      //   if (result.user_level === 1 || result.user_level === 2) {
-      //     router.push('/dashboard/users'); // Redirect to dashboard
-      //   } else {
-      //     setAlert({
-      //       type: 'danger',
-      //       message: 'You do not have access to the dashboard.',
-      //     });
-      //     router.push('/'); // Redirect to homepage for unauthorized users
-      //   }
       if (result.status === 'success') {
         setAlert({ type: 'success', message: result.message });
+
         Cookies.set('access_token', result.access_token, {
           expires: 1, // 1 day expiration
           secure: true, // Pastikan menggunakan HTTPS
           sameSite: 'Strict',
         });
 
-        windows.location.href = '/dashboard/users';
+        // Check user level and redirect
+        if (result.user_level === 1 || result.user_level === 2) {
+          router.push('/dashboard/users'); // Redirect to dashboard for admin and higher level users
+        } else {
+          setAlert({
+            type: 'danger',
+            message: 'You do not have access to the dashboard.',
+          });
+          router.push('/'); // Redirect to homepage for unauthorized users
+        }
       } else {
+        // Handle case where result.status is not 'success'
         setAlert({
           type: 'danger',
           message: result.message || 'An error occurred. Please try again.',
         });
       }
     } catch (error) {
+      console.error(error); // Log error details for debugging
       setAlert({
         type: 'danger',
         message: 'Network or server error. Please try again.',
       });
     }
   };
+
+
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault(); // Prevent default form submission
+  //   setAlert(null); // Clear previous alerts
+
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
+  //       {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({ email, password }), // Send email and password in the body
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       setAlert({
+  //         type: 'danger',
+  //         message: errorData.message || 'An error occurred. Please try again.',
+  //       });
+  //       return;
+  //     }
+
+  //     const result = await response.json();
+  //     // console.log(result); // Log the received data for debugging
+
+  //     if (result.status === 'success') {
+  //       setAlert({ type: 'success', message: result.message });
+
+  //       Cookies.set('access_token', result.access_token, {
+  //         expires: 1, // 1 day expiration
+  //         secure: true, // Pastikan menggunakan HTTPS
+  //         sameSite: 'Strict'
+  //       });
+
+  //       // Check user level
+  //       if (result.user_level === 1 || result.user_level === 2) {
+  //         router.push('/dashboard/users'); // Redirect to dashboard
+  //       } else {
+  //         setAlert({
+  //           type: 'danger',
+  //           message: 'You do not have access to the dashboard.',
+  //         });
+  //         router.push('/'); // Redirect to homepage for unauthorized users
+  //       }
+  //     // if (result.status === 'success') {
+  //     //   setAlert({ type: 'success', message: result.message });
+  //     //   Cookies.set('access_token', result.access_token, {
+  //     //     expires: 1, // 1 day expiration
+  //     //     secure: true, // Pastikan menggunakan HTTPS
+  //     //     sameSite: 'Strict',
+  //     //   });
+
+  //     //   windows.location.href = '/dashboard/users';
+  //     // } else {
+  //     //   setAlert({
+  //     //     type: 'danger',
+  //     //     message: result.message || 'An error occurred. Please try again.',
+  //     //   });
+  //     // }
+  //   } catch (error) {
+  //     setAlert({
+  //       type: 'danger',
+  //       message: 'Network or server error. Please try again.',
+  //     });
+  //   }
+  // };
 
   return (
     <Card

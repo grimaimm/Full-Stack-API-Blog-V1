@@ -22,6 +22,7 @@ export async function getServerSideProps(context) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      withCredentials: true,
     }
   );
 
