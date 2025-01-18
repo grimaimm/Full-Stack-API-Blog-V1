@@ -240,6 +240,7 @@ def get_all_articles_by_user():
             "total_views": article.total_views,
             "comment_count": comment_count,
             "created_at": article.created_at,
+            "user_id": article.user_id,
         }
 
         articles_list.append(article_data)
@@ -258,18 +259,25 @@ def update_article_by_id_and_user_id(article_id):
     # Ambil ID pengguna yang sedang login
     user_id = get_jwt_identity()
 
-    # Cek ketersediaan artikel berdasarkan ID
+    # Cek ketersediaan user berdasarkan ID
+    user = UserModel.query.get(user_id)
+    if not user:
+        return jsonify({"status": "error", "message": "User tidak ditemukan"}), 404
+
+    # Ambil data artikel yang akan diperbarui
     article = ArticleModel.query.get(article_id)
+
+    # Jika artikel tidak ditemukan
     if not article:
         return jsonify({"status": "error", "message": "Artikel tidak ditemukan"}), 404
 
-    # Pastikan artikel milik pengguna yang sedang login
-    if article.user_id != user_id:
+    # Pastikan hanya pengguna yang membuat artikel yang dapat memperbarui artikel tersebut
+    if str(article.user_id) != str(user_id):
         return (
             jsonify(
                 {
                     "status": "error",
-                    "message": "Anda tidak memiliki akses ke artikel ini",
+                    "message": "Anda tidak memiliki akses untuk memperbarui artikel ini",
                 }
             ),
             403,
@@ -279,31 +287,31 @@ def update_article_by_id_and_user_id(article_id):
 
     # Validasi Field
     required_fields = ["title", "content", "category_id"]
-    missing_fields = [field for field in required_fields if not data.get(field)]
-    if missing_fields:
-        return (
-            jsonify(
-                {
-                    "status": "error",
-                    "message": f"Field {', '.join(missing_fields)} tidak boleh kosong",
-                }
-            ),
-            400,
-        )
+    for field in required_fields:
+        if not data.get(field):
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "message": "Field {} tidak boleh kosong".format(field),
+                    }
+                ),
+                400,
+            )
 
     # Cek ketersediaan kategori berdasarkan ID
     category = CategoryModel.query.get(data["category_id"])
     if not category:
         return jsonify({"status": "error", "message": "Kategori tidak ditemukan"}), 404
 
-    # Update artikel
+    # Perbarui artikel
     article.title = data["title"]
     article.content = data["content"]
     article.category_id = data["category_id"]
+
     db.session.commit()
 
-    return jsonify({"status": "success", "message": "Artikel berhasil diupdate"}), 200
-
+    return jsonify({"status": "success", "message": "Artikel berhasil diperbarui"}), 200
 
 
 # Method DELETE - Hapus artikel yang diposting oleh user tertentu (Level: Author) /api/private/articles/{article_id}
@@ -317,14 +325,24 @@ def delete_article_by_id_and_user_id(article_id):
     # Ambil ID pengguna yang sedang login
     user_id = get_jwt_identity()
 
-    # Cek ketersediaan artikel berdasarkan ID
+    # Ambil data artikel yang akan dihapus
     article = ArticleModel.query.get(article_id)
+
+    # Jika artikel tidak ditemukan
     if not article:
         return jsonify({"status": "error", "message": "Artikel tidak ditemukan"}), 404
 
-    # Pastikan artikel milik pengguna yang sedang login
-    if article.user_id != user_id:
-        return jsonify({"status": "error", "message": "Anda tidak memiliki akses ke artikel ini"}), 403
+    # Pastikan hanya pengguna yang membuat artikel yang dapat menghapus artikel tersebut
+    if str(article.user_id) != str(user_id):
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Anda tidak memiliki akses untuk memperbarui artikel ini",
+                }
+            ),
+            403,
+        )
 
     # Hapus artikel
     db.session.delete(article)
