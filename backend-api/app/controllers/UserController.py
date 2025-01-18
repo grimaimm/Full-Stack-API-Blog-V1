@@ -39,7 +39,7 @@ def create_user():
                 ),
                 400,
             )
-            
+
     data = request.get_json()
 
     # Validasi Fullname hanya boleh menggunakan huruf
@@ -116,16 +116,15 @@ def get_all_users():
     access_error = check_access_level(["Admin"])
     if access_error:
         return access_error
-    
+
     # Ambil ID pengguna yang sedang login
     user_id = get_jwt_identity()
-    
+
     # Cek ketersediaan user berdasarkan ID
     user = UserModel.query.get(user_id)
     if not user:
         return jsonify({"status": "error", "message": "User tidak ditemukan"}), 404
-    
-    
+
     users = UserModel.query.all()
     results = []
 
@@ -171,9 +170,7 @@ def update_user(user_id):
     if access_error:
         return access_error
 
-    # Ambil ID pengguna yang sedang login
-    user_id = get_jwt_identity()
-
+    # Ambil data dari request
     data = request.get_json()
 
     # Cek ketersediaan user berdasarkan ID
@@ -183,27 +180,20 @@ def update_user(user_id):
 
     # Validasi Field
     required_fields = ["fullname", "email", "password", "level_id"]
-    for field in required_fields:
-        if not data.get(field):
-            return (
-                jsonify(
-                    {
-                        "status": "error",
-                        "message": "Harap isi semua field",
-                    }
-                ),
-                400,
-            )
-
-    data = request.get_json()
-
-    # Cek ketersediaan user berdasarkan ID
-    user = UserModel.query.get(user_id)
-    if not user:
-        return jsonify({"status": "error", "message": "User tidak ditemukan"}), 404
+    missing_fields = [field for field in required_fields if not data.get(field)]
+    if missing_fields:
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": f"Field berikut wajib diisi: {', '.join(missing_fields)}",
+                }
+            ),
+            400,
+        )
 
     # Validasi Fullname hanya boleh menggunakan huruf
-    fullname = data.get("fullname", "")
+    fullname = data["fullname"]
     if not re.match(r"^[a-zA-Z\s]+$", fullname):
         return (
             jsonify(
@@ -213,22 +203,11 @@ def update_user(user_id):
         )
 
     # Validasi Format Email
-    email = data.get("email", "")
+    email = data["email"]
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
         return jsonify({"status": "error", "message": "Format email tidak valid"}), 400
 
-    # Validasi Password
-    password = data.get("password", "")
-    validation = ValidateUserPassword(password)
-    if validation:
-        return jsonify({"status": "error", "message": validation}), 400
-
-    # Validasi Level
-    level = LevelModel.query.get(data["level_id"])
-    if not level:
-        return jsonify({"status": "error", "message": "Level tidak ditemukan"}), 400
-
-    # Cek ketersediaan user berdasarkan email
+    # Cek apakah email sudah digunakan oleh user lain
     if email != user.email:
         existing_user = UserModel.query.filter_by(email=email).first()
         if existing_user:
@@ -242,14 +221,27 @@ def update_user(user_id):
                 400,
             )
 
+    # Validasi Password
+    password = data["password"]
+    validation = ValidateUserPassword(password)
+    if validation:
+        return jsonify({"status": "error", "message": validation}), 400
+
+    # Validasi Level
+    level_id = data["level_id"]
+    level = LevelModel.query.get(level_id)
+    if not level:
+        return jsonify({"status": "error", "message": "Level tidak ditemukan"}), 400
+
     # Update user
     user.fullname = fullname
     user.email = email
-    user.level_id = level.id
+    user.level_id = level_id
 
     # Set Password
     user.set_password(password)
 
+    # Simpan perubahan
     db.session.commit()
 
     return (
@@ -338,10 +330,10 @@ def delete_user(user_id):
     access_error = check_access_level(["Admin"])
     if access_error:
         return access_error
-    
+
     # Ambil ID pengguna yang sedang login
     user_id = get_jwt_identity()
-    
+
     # Cek ketersediaan user berdasarkan ID
     user = UserModel.query.get(user_id)
     if not user:
