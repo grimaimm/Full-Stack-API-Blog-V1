@@ -331,14 +331,12 @@ def delete_user(user_id):
     if access_error:
         return access_error
 
-    # Ambil ID pengguna yang sedang login
-    user_id = get_jwt_identity()
-
     # Cek ketersediaan user berdasarkan ID
     user = UserModel.query.get(user_id)
     if not user:
         return jsonify({"status": "error", "message": "User tidak ditemukan"}), 404
 
+    # Hapus user dari database
     db.session.delete(user)
     db.session.commit()
 
