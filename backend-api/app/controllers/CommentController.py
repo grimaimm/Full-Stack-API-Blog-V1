@@ -64,9 +64,9 @@ def add_comment_to_article(article_id):
     )
 
 
-# Method GET - Mendapatkan semua komentar user tertentu /api/users/{user_id}/comments
+# Method GET - Mendapatkan semua komentar user tertentu /api/users/comments
 @jwt_required()
-def get_comments_for_user(user_id):
+def get_comments_for_user():
     # Cek Level Akses
     access_error = check_access_level(["Author", "Reader"])
     if access_error:
