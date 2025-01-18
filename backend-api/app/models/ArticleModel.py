@@ -18,8 +18,6 @@ class ArticleModel(db.Model):
 
   comments = db.relationship("CommentModel", backref="article", lazy=True)
 
-  # slug = db.Column(db.String(100), unique=True, nullable=False)
-
   def to_dict(self):
     return {
       "id": self.id,
@@ -30,19 +28,5 @@ class ArticleModel(db.Model):
       "created_at": self.created_at,
       "category_id": self.category_id,
       "user_id": self.user_id,
-      # "slug": self.slug,
     }
     
-  # @staticmethod
-  # def convert_to_slug(title):
-  #     # Replace spaces with hyphens and convert to lowercase
-  #     slug = re.sub(r'\s+', '-', title.lower())
-  #     # Remove any non-alphanumeric characters except hyphens
-  #     slug = re.sub(r'[^a-z0-9-]', '', slug)
-  #     return slug
-
-  # def __init__(self, title, content, **kwargs):
-  #     self.title = title
-  #     self.slug = self.convert_to_slug(title)  # Automatically generate slug
-  #     self.content = content
-  #     super().__init__(**kwargs)

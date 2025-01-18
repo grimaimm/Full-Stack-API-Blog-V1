@@ -75,56 +75,13 @@ def get_articles_by_category(category_id):
     )
 
 
-import re
-
-
-# Function to convert title to slug
-def convert_to_slug(title):
-    # Replace spaces with hyphens and convert to lowercase
-    slug = re.sub(r"\s+", "-", title.lower())
-    # Remove any non-alphanumeric characters except hyphens
-    # slug = re.sub(r'[^a-z0-9-]', '', slug)
-    return slug
-
-
-# Method GET - Mendapatkan artikel berdasarkan judul (Level: Public) /api/public/articles/<string:title>
-def get_article_by_title(slug):
-    # Mengubah slug menjadi judul (kebalikan dari proses convert_to_slug)
-    title = slug.replace("-", " ").title()
-
-    # Cari artikel berdasarkan judul
-    article = ArticleModel.query.filter_by(title=title).first()
-
-    if article is None:
-        return jsonify({"status": "error", "message": "Artikel tidak ditemukan"}), 404
-
-    # Tambah 1 pada total_views setiap kali artikel diakses
-    article.total_views += 1
-    db.session.commit()
-
-    comments = CommentModel.query.filter_by(article_id=article.id).all()
-    comment_count = len(comments)
-
-    article_data = {
-        "id": article.id,
-        "title": article.title,
-        "content": article.content,
-        "total_views": article.total_views,
-        "comment_count": comment_count,
-        "created_at": article.created_at,
-        "category_id": article.category_id,
-        "category_name": article.category.name,
-        "user_id": article.user_id,
-        "user_fullname": article.user.fullname,
-    }
-
-    return jsonify({"status": "success", "article": article_data}), 200
-
-
-# Method GET - Mendapatkan artikel tertentu (Level: Public) /api/public/articles/{article_id}
+# # Method GET - Mendapatkan artikel berdasarkan id (Level: Public) /api/public/articles/<int:article_id>
 # def get_article_by_id(article_id):
+#     # Cari artikel berdasarkan ID
 #     article = ArticleModel.query.get(article_id)
-#     if not article:
+    
+#     # Cek ketersediaan artikel
+#     if article is None:
 #         return jsonify({"status": "error", "message": "Artikel tidak ditemukan"}), 404
 
 #     # Tambah 1 pada total_views setiap kali artikel diakses
@@ -148,6 +105,35 @@ def get_article_by_title(slug):
 #     }
 
 #     return jsonify({"status": "success", "article": article_data}), 200
+
+
+# Method GET - Mendapatkan artikel tertentu (Level: Public) /api/public/articles/{article_id}
+def get_article_by_id(article_id):
+    article = ArticleModel.query.get(article_id)
+    if not article:
+        return jsonify({"status": "error", "message": "Artikel tidak ditemukan"}), 404
+
+    # Tambah 1 pada total_views setiap kali artikel diakses
+    article.total_views += 1
+    db.session.commit()
+
+    comments = CommentModel.query.filter_by(article_id=article.id).all()
+    comment_count = len(comments)
+
+    article_data = {
+        "id": article.id,
+        "title": article.title,
+        "content": article.content,
+        "total_views": article.total_views,
+        "comment_count": comment_count,
+        "created_at": article.created_at,
+        "category_id": article.category_id,
+        "category_name": article.category.name,
+        "user_id": article.user_id,
+        "user_fullname": article.user.fullname,
+    }
+
+    return jsonify({"status": "success", "article": article_data}), 200
 
 
 # ==========================================================================================================

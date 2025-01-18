@@ -11,5 +11,5 @@ ArticleRoute.route("/api/private/articles/<int:article_id>", methods=["DELETE"])
 
 # PUBLIC ROUTE
 ArticleRoute.route("/api/public/articles", methods=["GET"])(get_all_articles)
-ArticleRoute.route("/api/public/articles/<string:slug>", methods=["GET"])(get_article_by_title)
+ArticleRoute.route("/api/public/articles/<int:article_id>", methods=["GET"])(get_article_by_id)
 ArticleRoute.route("/api/public/categories/<int:category_id>/articles", methods=["GET"])(get_articles_by_category)
